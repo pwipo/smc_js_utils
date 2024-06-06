@@ -1277,6 +1277,69 @@ SmcUtils = {
     arrayExtend: function (array1, array2) {
         array2.forEach(o => array1.push(o));
         return array1;
+    },
+
+    /**
+     * convertFromObjectArray
+     * @param objectArray {SMCApi.ObjectArray}
+     * @param silent {boolean}
+     * @return {Object[]}
+     */
+    convertFromObjectArray: function (objectArray, silent) {
+        result = [];
+        if (objectArray == null || !(objectArray instanceof SMCApi.ObjectArray) || objectArray.size() == 0)
+            return result;
+        try {
+            if (objectArray.isSimple()) {
+                result = toList(objectArray);
+            } else if (isArrayContainArrays(objectArray)) {
+                for (let i = 0; i < objectArray.size(); i++) {
+                    /** @type {SMCApi.ObjectArray} */
+                    arr = objectArray.get(i);
+                    if (arr.isSimple())
+                        result.append(toList(arr));
+                }
+            } else if (isArrayContainObjectElements(objectArray)) {
+                result = toList(objectArray)
+                    .map(o => convertFromObjectElement(o, silent))
+                    .filter(o => o != null);
+            }
+
+        } catch (e) {
+            if (!silent)
+                throw e
+        }
+        return result;
+    },
+
+    /**
+     * convertFromObjectElement
+     * @param objectElement {SMCApi.ObjectElement}
+     * @param silent {boolean}
+     * @return {Object}
+     */
+    convertFromObjectElement: function (objectElement, silent) {
+        result = {};
+        if (objectElement == null || !(objectElement instanceof SMCApi.ObjectElement))
+            return result;
+        try {
+            for (field in objectElement.getFields()) {
+                let typev = field.getType();
+                let value = field.getValue();
+                if (value != null) {
+                    if (typev == SMCApi.ObjectType.OBJECT_ARRAY) {
+                        value = convertFromObjectArray(value, silent);
+                    } else if (typev == SMCApi.ObjectType.OBJECT_ELEMENT) {
+                        value = convertFromObjectElement(value, silent)
+                    }
+                }
+                result[field.getName()] = value;
+            }
+        } catch (e) {
+            if (!silent)
+                throw e
+        }
+        return result;
     }
 
 }
