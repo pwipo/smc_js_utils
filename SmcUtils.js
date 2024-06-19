@@ -1172,6 +1172,13 @@ SmcUtils = {
      * @param {number} id
      * @param {object} obj
      */
+    /**
+     * This callback type is called `CheckedConsumerMessagesList` and is displayed as a global symbol.
+     *
+     * @callback SmcUtils.CheckedConsumerMessagesList
+     * @param {number} id
+     * @param {(SMCApi.IMessage[])[]} obj
+     */
 
     /**
      *
@@ -1220,7 +1227,7 @@ SmcUtils = {
      *
      * @param configurationTool {SMCApi.ConfigurationTool}
      * @param executionContextTool {SMCApi.ExecutionContextTool}
-     * @param func {SmcUtils.CheckedConsumerAny}
+     * @param func {SmcUtils.CheckedConsumerMessagesList}
      */
     processMessagesAll: function (configurationTool, executionContextTool, func) {
         /** @type {(SMCApi.IMessage[])[]} */
