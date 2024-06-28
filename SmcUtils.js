@@ -631,7 +631,7 @@ SmcUtils = {
         const name = names[level];
         /** @type {SMCApi.ObjectField[]} */
         const fields = [];
-        for (let objectElement in objectElements) {
+        for (let objectElement of objectElements) {
             const field = objectElement.findField(name);
             if (field != null) {
                 const objectField = field;
@@ -737,10 +737,15 @@ SmcUtils = {
     getValueTypeObject: function (value) {
         if (typeof value === undefined || value == null)
             return null;
+        /*
         if (!Number.isInteger(value) && Number.isFinite(value)) {
             return SMCApi.ValueType.LONG;
         } else if (Number.isInteger(value)) {
             return SMCApi.ValueType.DOUBLE;
+         */
+        if (value instanceof Number) {
+            const intValue = Math.round(value);
+            return value === intValue ? SMCApi.ValueType.LONG : SMCApi.ValueType.DOUBLE;
         } else if (Object.prototype.toString.call(value) === "[object String]") {
             return SMCApi.ValueType.STRING;
         } else if (Array.isArray(value)) {
@@ -778,30 +783,30 @@ SmcUtils = {
         if (typeof type === undefined || type == null)
             return null;
         switch (type) {
-            case SmcUtils.ValueType.STRING:
-                return SmcUtils.ObjectType.STRING;
-            case SmcUtils.ValueType.BYTE:
-                return SmcUtils.ObjectType.BYTE;
-            case SmcUtils.ValueType.SHORT:
-                return SmcUtils.ObjectType.SHORT;
-            case SmcUtils.ValueType.INTEGER:
-                return SmcUtils.ObjectType.INTEGER;
-            case SmcUtils.ValueType.LONG:
-                return SmcUtils.ObjectType.LONG;
-            case SmcUtils.ValueType.BIG_INTEGER:
-                return SmcUtils.ObjectType.BIG_INTEGER;
-            case SmcUtils.ValueType.FLOAT:
-                return SmcUtils.ObjectType.FLOAT;
-            case SmcUtils.ValueType.DOUBLE:
-                return SmcUtils.ObjectType.DOUBLE;
-            case SmcUtils.ValueType.BIG_DECIMAL:
-                return SmcUtils.ObjectType.BIG_DECIMAL;
-            case SmcUtils.ValueType.BYTES:
-                return SmcUtils.ObjectType.BYTES;
-            case SmcUtils.ValueType.BOOLEAN:
-                return SmcUtils.ObjectType.BOOLEAN;
-            case SmcUtils.ValueType.OBJECT_ARRAY:
-                return SmcUtils.ObjectType.OBJECT_ARRAY;
+            case SMCApi.ValueType.STRING:
+                return SMCApi.ObjectType.STRING;
+            case SMCApi.ValueType.BYTE:
+                return SMCApi.ObjectType.BYTE;
+            case SMCApi.ValueType.SHORT:
+                return SMCApi.ObjectType.SHORT;
+            case SMCApi.ValueType.INTEGER:
+                return SMCApi.ObjectType.INTEGER;
+            case SMCApi.ValueType.LONG:
+                return SMCApi.ObjectType.LONG;
+            case SMCApi.ValueType.BIG_INTEGER:
+                return SMCApi.ObjectType.BIG_INTEGER;
+            case SMCApi.ValueType.FLOAT:
+                return SMCApi.ObjectType.FLOAT;
+            case SMCApi.ValueType.DOUBLE:
+                return SMCApi.ObjectType.DOUBLE;
+            case SMCApi.ValueType.BIG_DECIMAL:
+                return SMCApi.ObjectType.BIG_DECIMAL;
+            case SMCApi.ValueType.BYTES:
+                return SMCApi.ObjectType.BYTES;
+            case SMCApi.ValueType.BOOLEAN:
+                return SMCApi.ObjectType.BOOLEAN;
+            case SMCApi.ValueType.OBJECT_ARRAY:
+                return SMCApi.ObjectType.OBJECT_ARRAY;
         }
         return null;
     },
@@ -815,30 +820,30 @@ SmcUtils = {
         if (typeof type === undefined || type == null)
             return null;
         switch (type) {
-            case SmcUtils.ObjectType.STRING:
-                return SmcUtils.ValueType.STRING;
-            case SmcUtils.ObjectType.BYTE:
-                return SmcUtils.ValueType.BYTE;
-            case SmcUtils.ObjectType.SHORT:
-                return SmcUtils.ValueType.SHORT;
-            case SmcUtils.ObjectType.INTEGER:
-                return SmcUtils.ValueType.INTEGER;
-            case SmcUtils.ObjectType.LONG:
-                return SmcUtils.ValueType.LONG;
-            case SmcUtils.ObjectType.BIG_INTEGER:
-                return SmcUtils.ValueType.BIG_INTEGER;
-            case SmcUtils.ObjectType.FLOAT:
-                return SmcUtils.ValueType.FLOAT;
-            case SmcUtils.ObjectType.DOUBLE:
-                return SmcUtils.ValueType.DOUBLE;
-            case SmcUtils.ObjectType.BIG_DECIMAL:
-                return SmcUtils.ValueType.BIG_DECIMAL;
-            case SmcUtils.ObjectType.BYTES:
-                return SmcUtils.ValueType.BYTES;
-            case SmcUtils.ObjectType.BOOLEAN:
-                return SmcUtils.ValueType.BOOLEAN;
-            case SmcUtils.ObjectType.OBJECT_ARRAY:
-                return SmcUtils.ValueType.OBJECT_ARRAY;
+            case SMCApi.ObjectType.STRING:
+                return SMCApi.ValueType.STRING;
+            case SMCApi.ObjectType.BYTE:
+                return SMCApi.ValueType.BYTE;
+            case SMCApi.ObjectType.SHORT:
+                return SMCApi.ValueType.SHORT;
+            case SMCApi.ObjectType.INTEGER:
+                return SMCApi.ValueType.INTEGER;
+            case SMCApi.ObjectType.LONG:
+                return SMCApi.ValueType.LONG;
+            case SMCApi.ObjectType.BIG_INTEGER:
+                return SMCApi.ValueType.BIG_INTEGER;
+            case SMCApi.ObjectType.FLOAT:
+                return SMCApi.ValueType.FLOAT;
+            case SMCApi.ObjectType.DOUBLE:
+                return SMCApi.ValueType.DOUBLE;
+            case SMCApi.ObjectType.BIG_DECIMAL:
+                return SMCApi.ValueType.BIG_DECIMAL;
+            case SMCApi.ObjectType.BYTES:
+                return SMCApi.ValueType.BYTES;
+            case SMCApi.ObjectType.BOOLEAN:
+                return SMCApi.ValueType.BOOLEAN;
+            case SMCApi.ObjectType.OBJECT_ARRAY:
+                return SMCApi.ValueType.OBJECT_ARRAY;
         }
         return null;
     },
@@ -896,7 +901,12 @@ SmcUtils = {
      * @returns {SMCApi.IAction} or undefined
      */
     getFirstActionWithData: function (actions) {
-        return actions.find(a => SmcUtils.hasDataAction(a));
+        for (let a of actions) {
+            if (SmcUtils.hasDataAction(a))
+                return a;
+        }
+        // return actions.find(a => SmcUtils.hasDataAction(a));
+        return null;
     },
 
     /**
@@ -914,7 +924,8 @@ SmcUtils = {
      * @returns {SMCApi.IAction} or undefined
      */
     getLastActionWithData: function (actions) {
-        return actions.findLast(a => SmcUtils.hasDataAction(a))
+        const arr = actions.filter(a => SmcUtils.hasDataAction(a));
+        return arr && arr.length > 0 ? arr[arr.length - 1] : null;
     },
 
     /**
@@ -932,7 +943,12 @@ SmcUtils = {
      * @returns {SMCApi.IAction} or undefined
      */
     getFirstActionExecuteWithMessages: function (actions) {
-        return actions.find(a => a.getType() === SMCApi.ActionType.EXECUTE && a.getMessages().length > 0);
+        for (let a of actions) {
+            if (a.getType() === SMCApi.ActionType.EXECUTE && a.getMessages().length > 0)
+                return a;
+        }
+        // return actions.find(a => a.getType() === SMCApi.ActionType.EXECUTE && a.getMessages().length > 0);
+        return null;
     },
 
     /**
@@ -950,7 +966,8 @@ SmcUtils = {
      * @returns {SMCApi.IAction} or undefined
      */
     getLastActionExecuteWithMessages: function (actions) {
-        return actions.findLast(a => a.getType() === SMCApi.ActionType.EXECUTE && a.getMessages().length > 0);
+        const arr = actions.filter(a => a.getType() === SMCApi.ActionType.EXECUTE && a.getMessages().length > 0);
+        return arr && arr.length > 0 ? arr[arr.length - 1] : null;
     },
 
     /**
@@ -1061,10 +1078,11 @@ SmcUtils = {
      * @returns {SMCApi.IMessage[]} or undefined
      */
     executeParallelAndGetMessages: function (executionContextTool, id, params) {
-        return SmcUtils.executeParallelAndGet(executionContextTool, id, params)
+        const lst = SmcUtils.executeParallelAndGet(executionContextTool, id, params)
             .filter(a => SmcUtils.hasDataAction(a))
-            .map(a => a.getMessages())
-            .find(a => true);
+            .map(a => a.getMessages());
+        // .find(a => true);
+        return lst && lst.length > 0 ? lst[0] : null;
     },
 
     /**
@@ -1293,22 +1311,22 @@ SmcUtils = {
      * @return {Object[]}
      */
     convertFromObjectArray: function (objectArray, silent) {
-        result = [];
-        if (objectArray == null || !(objectArray instanceof SMCApi.ObjectArray) || objectArray.size() == 0)
+        let result = [];
+        if (objectArray == null || !(objectArray instanceof SMCApi.ObjectArray) || objectArray.size() === 0)
             return result;
         try {
             if (objectArray.isSimple()) {
-                result = toList(objectArray);
-            } else if (isArrayContainArrays(objectArray)) {
+                result = SmcUtils.toList(objectArray);
+            } else if (SmcUtils.isArrayContainArrays(objectArray)) {
                 for (let i = 0; i < objectArray.size(); i++) {
                     /** @type {SMCApi.ObjectArray} */
-                    arr = objectArray.get(i);
+                    let arr = objectArray.get(i);
                     if (arr.isSimple())
-                        result.append(toList(arr));
+                        result.append(SmcUtils.toList(arr));
                 }
-            } else if (isArrayContainObjectElements(objectArray)) {
-                result = toList(objectArray)
-                    .map(o => convertFromObjectElement(o, silent))
+            } else if (SmcUtils.isArrayContainObjectElements(objectArray)) {
+                result = SmcUtils.toList(objectArray)
+                    .map(o => SmcUtils.convertFromObjectElement(o, silent))
                     .filter(o => o != null);
             }
 
@@ -1326,21 +1344,80 @@ SmcUtils = {
      * @return {Object}
      */
     convertFromObjectElement: function (objectElement, silent) {
-        result = {};
+        let result = {};
         if (objectElement == null || !(objectElement instanceof SMCApi.ObjectElement))
             return result;
         try {
-            for (field in objectElement.getFields()) {
+            for (let field of objectElement.getFields()) {
                 let typev = field.getType();
                 let value = field.getValue();
                 if (value != null) {
-                    if (typev == SMCApi.ObjectType.OBJECT_ARRAY) {
-                        value = convertFromObjectArray(value, silent);
-                    } else if (typev == SMCApi.ObjectType.OBJECT_ELEMENT) {
-                        value = convertFromObjectElement(value, silent)
+                    if (typev === SMCApi.ObjectType.OBJECT_ARRAY) {
+                        value = SmcUtils.convertFromObjectArray(value, silent);
+                    } else if (typev === SMCApi.ObjectType.OBJECT_ELEMENT) {
+                        value = SmcUtils.convertFromObjectElement(value, silent)
                     }
                 }
                 result[field.getName()] = value;
+            }
+        } catch (e) {
+            if (!silent)
+                throw e
+        }
+        return result;
+    },
+
+    /**
+     * convertToObjectArray
+     * @param arr {Object[]}
+     * @param silent {boolean}
+     * @return {SMCApi.ObjectArray}
+     */
+    convertToObjectArray: function (arr, silent) {
+        const result = new SMCApi.ObjectArray();
+        if (arr == null || arr.length === 0)
+            return result;
+        try {
+            const type = SmcUtils.convertTo(SmcUtils.getValueTypeObject(arr[0]));
+            if (type != null) {
+                result.type = type;
+                arr.forEach(v => result.add(v));
+            } else {
+                arr.forEach(v => result.add(SmcUtils.convertToObjectElement(v, silent)));
+            }
+        } catch (e) {
+            if (!silent)
+                throw e
+        }
+        return result;
+    },
+
+    /**
+     * convertToObjectElement
+     * @param obj {Object}
+     * @param silent {boolean}
+     * @return {SMCApi.ObjectElement}
+     */
+    convertToObjectElement: function (obj, silent) {
+        const result = new SMCApi.ObjectElement();
+        if (obj == null)
+            return result;
+        try {
+            for (const prop in obj) {
+                if (Object.prototype.hasOwnProperty.call(obj, prop)) {
+                    let value = obj[prop];
+                    let type = SmcUtils.convertTo(SmcUtils.getValueTypeObject(value));
+                    if (type == null) {
+                        if (Array.isArray(value)) {
+                            value = SmcUtils.convertToObjectArray(value, silent);
+                            type = SMCApi.ObjectType.OBJECT_ARRAY;
+                        } else {
+                            value = SmcUtils.convertToObjectElement(value, silent);
+                            type = SMCApi.ObjectType.OBJECT_ELEMENT;
+                        }
+                    }
+                    result.getFields().push(new SMCApi.ObjectField(prop, value, type));
+                }
             }
         } catch (e) {
             if (!silent)
