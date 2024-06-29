@@ -743,7 +743,7 @@ SmcUtils = {
         } else if (Number.isInteger(value)) {
             return SMCApi.ValueType.DOUBLE;
          */
-        if (value instanceof Number) {
+        if (value instanceof Number || typeof (value) === "number") {
             const intValue = Math.round(value);
             return value === intValue ? SMCApi.ValueType.LONG : SMCApi.ValueType.DOUBLE;
         } else if (Object.prototype.toString.call(value) === "[object String]") {
