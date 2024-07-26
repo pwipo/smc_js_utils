@@ -1407,7 +1407,7 @@ SmcUtils = {
                 if (Object.prototype.hasOwnProperty.call(obj, prop)) {
                     let value = obj[prop];
                     let type = SmcUtils.convertTo(SmcUtils.getValueTypeObject(value));
-                    if (type == null) {
+                    if (value != null && (type == null || type === SMCApi.ObjectType.BYTES)) {
                         if (Array.isArray(value)) {
                             value = SmcUtils.convertToObjectArray(value, silent);
                             type = SMCApi.ObjectType.OBJECT_ARRAY;
