@@ -1051,7 +1051,7 @@ SmcUtils = {
      */
     executeAndGet: function (executionContextTool, id, params) {
         executionContextTool.getFlowControlTool().executeNow(SMCApi.CommandType.EXECUTE, id, params);
-        return executionContextTool.getFlowControlTool().getMessagesFromExecuted(id);
+        return executionContextTool.getFlowControlTool().getMessagesFromExecuted(0, id);
     },
 
     /**
